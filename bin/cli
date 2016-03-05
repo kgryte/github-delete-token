@@ -125,11 +125,13 @@ del( token_id, opts, clbk );
 */
 function clbk( error, info ) {
 	var str;
+	var re;
 	if ( info ) {
 		process.stderr.write( JSON.stringify( info )+'\n', 'utf8' );
 	}
 	if ( error ) {
-		if ( error.status === 401 ) {
+		re = /otp/ig;
+		if ( error.status === 401 && re.test( error.message ) ) {
 			// Prompt for multi-factor authentication:
 			opts.otp = prompt( 'Enter one-time password: ', {'echo':''} );
 			return del( token_id, opts, clbk );
