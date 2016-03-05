@@ -2,7 +2,7 @@
 
 var deleteToken = require( './../lib' );
 
-var token_id = 1;
+var tokenID = 1;
 
 var opts = {
 	'username': '<username>',
@@ -11,7 +11,7 @@ var opts = {
 	'useragent': 'beep-boop-bop'
 };
 
-deleteToken( token_id, opts, clbk );
+deleteToken( tokenID, opts, clbk );
 
 function clbk( error, info ) {
 	if ( info ) {

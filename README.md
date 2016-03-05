@@ -24,14 +24,14 @@ var deleteToken = require( 'github-delete-token' );
 [Deletes][github-delete-token] a Github OAuth access [token][github-token].
 
 ``` javascript
-var token_id = 1;
+var tokenID = 1;
 
 var opts = {
 	'username': 'beep',
 	'password': 'boop'	
 };
 
-deleteToken( token_id, opts, clbk )
+deleteToken( tokenID, opts, clbk )
 
 function clbk( error, info ) {
 	// Check for rate limit information...
@@ -61,7 +61,7 @@ var opts = {
 	'password': 'boop'
 };
 
-deleteToken( token_id, opts, clbk );
+deleteToken( tokenID, opts, clbk );
 ```
 
 To specify a [user agent][github-user-agent], set the `useragent` option.
@@ -73,7 +73,7 @@ var opts = {
 	'useragent': 'hello-github!'
 };
 
-deleteToken( token_id, opts, clbk );
+deleteToken( tokenID, opts, clbk );
 ```
 
 If a user has [two-factor authentication][github-two-factor] enabled, set the `otp` (one-time password) option.
@@ -85,7 +85,7 @@ var opts = {
 	'otp': '1234'
 };
 
-deleteToken( token_id, opts, clbk );
+deleteToken( tokenID, opts, clbk );
 ```
 
 
@@ -103,7 +103,7 @@ deleteToken( token_id, opts, clbk );
 ``` javascript
 var deleteToken = require( 'github-delete-token' );
 
-var token_id = 1;
+var tokenID = 1;
 
 var opts = {
 	'username': '<username>',
@@ -112,7 +112,7 @@ var opts = {
 	'useragent': 'beep-boop-bop'
 };
 
-deleteToken( token_id, opts, clbk );
+deleteToken( tokenID, opts, clbk );
 
 function clbk( error, info ) {
 	if ( info ) {
