@@ -1,0 +1,143 @@
+#!/usr/bin/env node
+'use strict';
+
+// MODULES //
+
+var fs = require( 'fs' );
+var path = require( 'path' );
+var parseArgs = require( 'minimist' );
+var notifier = require( 'update-notifier' );
+var prompt = require( 'prompt-sync' )();
+var exec = require( 'child_process' ).execSync;
+var cwd = require( 'utils-cwd' );
+var eol = require( 'regex-eol' );
+var pkg = require( './../package.json' );
+var opts = require( './opts.json' );
+var del = require( './../lib' );
+
+
+// VARIABLES //
+
+var username;
+var password;
+var token_id;
+var args;
+
+
+// FUNCTIONS //
+
+/**
+* FUNCTION: onClose()
+*	Callback invoked upon writing a file to `stdout`.
+*
+* @private
+*/
+function onClose() {
+	process.exit( 0 );
+}
+
+
+// INIT //
+
+process.stdout.on( 'error', process.exit );
+
+
+// PACKAGE UPDATES //
+
+notifier( { 'pkg': pkg } ).notify();
+
+
+// ARGUMENTS //
+
+args = parseArgs( process.argv.slice( 2 ), opts );
+
+
+// HELP //
+
+if ( args.help ) {
+	fs.createReadStream( path.join( __dirname, 'usage.txt' ) )
+		.pipe( process.stdout )
+		.on( 'close', onClose );
+    return;
+}
+
+
+// VERSION //
+
+if ( args.version ) {
+	console.log( pkg.version );
+	return;
+}
+
+
+// OPTIONS //
+
+opts = {};
+
+if ( args.username ) {
+	username = args.username;
+}
+else if ( process.env.GITHUB_USERNAME ) {
+	username = process.env.GITHUB_USERNAME;
+}
+else {
+	// Attempt to infer from `git config`:
+	username = exec( 'git config user.name', {'cwd': cwd()} );
+	username = username.toString().replace( eol, '' );
+}
+if ( username ) {
+	opts.username = username;
+}
+if ( args.otp ) {
+	opts.otp = args.otp;
+}
+if ( args.useragent ) {
+	opts.useragent = args.useragent;
+}
+if ( args.password ) {
+	password = args.password;
+}
+else if ( process.env.GITHUB_PASSWORD ) {
+	password = process.env.GITHUB_PASSWORD;
+}
+else {
+	// Prompt for a password:
+	password = prompt( 'Enter Github password: ', {'echo':''} );
+}
+if ( password ) {
+	opts.password = password;
+}
+
+
+// DELETE TOKEN //
+
+token_id = args._[ 0 ];
+del( token_id, opts, clbk );
+
+/**
+* FUNCTION: clbk( error, info )
+*	Callback invoked upon deleting a token.
+*
+* @private
+* @param {Error|Null} error - error object
+* @param {Object} info - rate limit info
+* @returns {Void}
+*/
+function clbk( error, info ) {
+	var str;
+	if ( info ) {
+		process.stderr.write( JSON.stringify( info )+'\n', 'utf8' );
+	}
+	if ( error ) {
+		if ( error.status === 401 ) {
+			// Prompt for multi-factor authentication:
+			opts.otp = prompt( 'Enter one-time password: ', {'echo':''} );
+			return del( token_id, opts, clbk );
+		}
+		process.stderr.write( error.message+'\n', 'utf8' );
+		return process.exit( 1 );
+	}
+	str = 'Deleted token ' + token_id + '.';
+	process.stderr.write( str+'\n', 'utf8' );
+	process.exit( 0 );
+}
